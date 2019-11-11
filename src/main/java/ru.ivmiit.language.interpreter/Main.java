@@ -1,6 +1,5 @@
 package ru.ivmiit.language.interpreter;
 
-
 import java.io.*;
 import java.util.*;
 
@@ -30,10 +29,20 @@ public class Main {
 
     static public void main(String argv[]) {
         try {
-            InputStream inputStream = Main.class.getClassLoader().getResourceAsStream("test.txt");
-            BufferedReader in  = new BufferedReader(new InputStreamReader(inputStream));
+//            InputStream inputStream = Main.class.getClassLoader().getResourceAsStream("test.txt");
+            BufferedReader in  = new BufferedReader(new InputStreamReader(System.in));
+            Scanner scanner = new Scanner(System.in);
+
+            OutputStream outputStream = new ByteArrayOutputStream();
+            InputStream is = new ByteArrayInputStream(outputStream);
+
             ParserClassName p = new ParserClassName(new Lexer(in));
             Object result = p.parse().value;
+
+            while (true) {
+                String string = scanner.nextLine();
+                outputStream.write(string.getBytes());
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -86,9 +95,7 @@ class PlusOperator implements Operator {
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer)v1 + (Integer)v2;
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return 0;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
     }
 }
@@ -101,9 +108,7 @@ class TimesOperator implements Operator {
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer)v1 * (Integer)v2;
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return 0;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
     }
 }
@@ -116,9 +121,7 @@ class MinusOperator implements Operator {
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer)v1 - (Integer)v2;
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return 0;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
     }
 }
@@ -131,14 +134,12 @@ class DivideOperator implements Operator {
         Object v2 = e2.run(hm);
         if (v1 instanceof Integer && v2 instanceof Integer) {
             if ((Integer)v2 == 0) {
-                System.out.println("Error: division by zero");
-                System.exit(1);
+                throw new ArithmeticException("Error: division by zero");
+
             }
             return (Integer)v1 / (Integer)v2;
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return 0;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
     }
 }
@@ -151,14 +152,11 @@ class ModeOperator implements Operator {
 
         if (v1 instanceof Integer && v2 instanceof Integer) {
             if ((Integer)v2 == 0) {
-                System.out.println("Error: division by zero");
-                System.exit(1);
+                throw new ArithmeticException("Error: division by zero");
             }
             return (Integer)v1 % (Integer)v2;
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return 0;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
     }
 }
@@ -235,9 +233,7 @@ class UMinusExpression implements Expr
         if (v instanceof Integer) {
             return -((Integer)v);
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return 0;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
     }
 
@@ -257,9 +253,7 @@ class STRLengthExpression implements Expr
         if (v instanceof String) {
             return ((String)v).length();
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return 0;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
 
     }
@@ -287,9 +281,7 @@ class STRPositionExpression implements Expr
             int pos = s.indexOf(s2);
             return (pos != -1) ? pos + 1 : 0;
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return 0;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
     }
 
@@ -306,9 +298,7 @@ class EqCond implements Condition
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer)v1 == (Integer)v2;
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return false;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
 
     }
@@ -324,9 +314,7 @@ class LtCond implements Condition
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer)v1 < (Integer)v2;
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return false;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
     }
 }
@@ -341,9 +329,7 @@ class LeCond implements Condition
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer)v1 <= (Integer)v2;
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return false;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
     }
 }
@@ -358,9 +344,7 @@ class GtCond implements Condition
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer)v1 > (Integer)v2;
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return false;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
     }
 }
@@ -375,9 +359,7 @@ class GeCond implements Condition
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer)v1 >= (Integer)v2;
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return false;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
     }
 }
@@ -392,9 +374,7 @@ class NeCond implements Condition
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer)v1 != (Integer)v2;
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return false;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
     }
 }
@@ -409,9 +389,7 @@ class StrEqCond implements Condition
         if (v1 instanceof String && v2 instanceof String) {
             return ((String)v1).equals((String)v2);
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return false;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
     }
 }
@@ -426,9 +404,7 @@ class StrNotEqCond implements Condition
         if (v1 instanceof String && v2 instanceof String) {
             return !((String)v1).equals((String)v2);
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return false;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
     }
 }
@@ -573,9 +549,7 @@ class ConcatStringExpression implements Expr
         if (v1 instanceof String && v2 instanceof String) {
             return (String)v1 + (String)v2;
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return null;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
     }
 }
@@ -612,11 +586,8 @@ class SubStringExpression implements Expr
                 return new String(s.substring(pos-1, pos+length-1));
             }
         } else {
-            System.out.println("Error: wrong objects type");
-            System.exit(1);
-            return null;
+            throw new IllegalArgumentException("Error: wrong objects type");
         }
-
     }
 }
 

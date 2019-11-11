@@ -26,5 +26,5 @@ begin
 	print(readstr);
 
 	print("enter int, I will print it");
-	print(readint)
+	print(readint);
 end
