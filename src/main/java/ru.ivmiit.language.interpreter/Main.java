@@ -9,8 +9,10 @@ interface Operator { int count(Expr e1, Expr e2, HashMap<String, Object> hm); }
 
 interface SimpleInstruction { void run(HashMap<String,Object> hm); }
 
-interface WhileInstructionI extends SimpleInstruction {void run(HashMap<String, Object> hm); }
-interface IfInstructionI extends SimpleInstruction {void run(HashMap<String, Object> hm); }
+interface WhileInstructionI extends SimpleInstruction {}
+interface IfInstructionI extends SimpleInstruction {}
+interface DoEndCaseInstructionI extends SimpleInstruction {}
+interface CaseInstructionI {void run(HashMap<String,Object> hm);}
 
 public class Main {
 
@@ -29,20 +31,13 @@ public class Main {
 
     static public void main(String argv[]) {
         try {
-//            InputStream inputStream = Main.class.getClassLoader().getResourceAsStream("test.txt");
-            BufferedReader in  = new BufferedReader(new InputStreamReader(System.in));
             Scanner scanner = new Scanner(System.in);
-
             OutputStream outputStream = new ByteArrayOutputStream();
-            InputStream is = new ByteArrayInputStream(outputStream);
+            InputStream inputStream = Main.class.getClassLoader().getResourceAsStream("test.txt");
 
+            BufferedReader in  = new BufferedReader(new InputStreamReader(inputStream));
             ParserClassName p = new ParserClassName(new Lexer(in));
             Object result = p.parse().value;
-
-            while (true) {
-                String string = scanner.nextLine();
-                outputStream.write(string.getBytes());
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -583,7 +578,7 @@ class SubStringExpression implements Expr
             if (pos < 1 || pos > s.length() || length < 1) {
                 return "";
             } else {
-                return new String(s.substring(pos-1, pos+length-1));
+                return s.substring(pos - 1, pos + length - 1);
             }
         } else {
             throw new IllegalArgumentException("Error: wrong objects type");
@@ -701,6 +696,54 @@ class IfElseInstruction implements IfInstructionI {
             simpleInstruction.run(hm);
         } else {
             simpleInstruction2.run(hm);
+        }
+    }
+}
+
+class DoEndCaseInstruction implements DoEndCaseInstructionI {
+    CaseInstruction caseInstruction;
+
+    public DoEndCaseInstruction (CaseInstruction caseInstruction) {
+        this.caseInstruction = caseInstruction;
+    }
+
+    public void run(HashMap<String, Object> hm){
+        caseInstruction.run(hm);
+    }
+}
+
+class CaseInstruction implements CaseInstructionI {
+
+    Expr condition;
+    InstructionList simpleInstruction;
+    CaseInstruction caseInstruction;
+    InstructionList otherwiseInstruction;
+
+
+    public CaseInstruction (Expr condition, InstructionList simpleInstruction) {
+        this.condition = condition;
+        this.simpleInstruction = simpleInstruction;
+    }
+
+    public CaseInstruction (Expr condition, InstructionList simpleInstruction, InstructionList otherwiseInstruction) {
+        this.condition = condition;
+        this.simpleInstruction = simpleInstruction;
+        this.otherwiseInstruction = otherwiseInstruction;
+    }
+
+    public CaseInstruction (Expr condition, InstructionList simpleInstruction, CaseInstruction caseInstruction) {
+        this.condition = condition;
+        this.simpleInstruction = simpleInstruction;
+        this.caseInstruction = caseInstruction;
+    }
+
+    public void run(HashMap<String, Object> hm){
+        if ((Boolean)condition.run(hm)) {
+            simpleInstruction.run(hm);
+        } else if(caseInstruction != null) {
+            caseInstruction.run(hm);
+        } else if (otherwiseInstruction != null) {
+            otherwiseInstruction.run(hm);
         }
     }
 }

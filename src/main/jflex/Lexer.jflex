@@ -50,6 +50,10 @@ STRING = \"([^\\\"]|\\.)*\"
     "else"            { return symbol(CupSymbol.ELSE); }
     "while"           { return symbol(CupSymbol.WHILE); }
     "do"              { return symbol(CupSymbol.DO); }
+    "docase"          { return symbol(CupSymbol.DOCASE); }
+    "case"            { return symbol(CupSymbol.CASE); }
+    "otherwise"       { return symbol(CupSymbol.OTHERWISE); }
+    "endcase"         { return symbol(CupSymbol.ENDCASE); }
 
     "print"           { return symbol(CupSymbol.PRINT); }
     "readint"         { return symbol(CupSymbol.READINT); }

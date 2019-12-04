@@ -1,7 +1,27 @@
 import java_cup.runtime.*;
 import java.util.*;
 import java.io.*;
-import java_cup.runtime.Scanner;
+
+action  code {:
+    public void report_error(String message, Object info) {
+        StringBuilder m = new StringBuilder("Error");
+        if (info instanceof java_cup.runtime.Symbol) {
+            java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
+            if (s.left >= 0) {
+                m.append(" in line "+(s.left+1));
+                if (s.right >= 0)
+                    m.append(", column "+(s.right+1));
+            }
+        }
+        m.append(" : "+message);
+        System.err.println(m);
+    }
+
+    public void report_fatal_error(String message, Object info) {
+        report_error(message, info);
+        System.exit(1);
+    }
+:};
 
 /** Terminals */
 
@@ -16,6 +36,8 @@ terminal           PRINT, READINT, LENGTH, POSITION, READSTR, CONCATENATE, SUBST
 terminal           ASSIGN;
 terminal   	       EQ, LT, LE, GT, GE, NE; // num_rel
 terminal    	   STREQ, STRNOTEQ; //str_rel
+
+terminal           DOCASE, CASE, OTHERWISE, ENDCASE;
 
 terminal           SEMI, COMMA, PLUS, MINUS, TIMES, DIVIDE, MODE, LPAREN, RPAREN;
 terminal Integer   NUM;
@@ -36,11 +58,14 @@ non terminal Condition str_rel;
 non terminal SimpleInstruction simple_instr;
 non terminal InstructionList instr;
 
+non terminal CaseInstruction case_stat;
+non terminal DoEndCaseInstruction do_end_case_stat;
 non terminal SimpleInstruction assign_stat;
 non terminal SimpleInstruction if_stat;
 non terminal SimpleInstruction while_stat;
 non terminal SimpleInstruction output_stat;
 non terminal Main program;
+
 
 /** Precedence */
 precedence left PLUS, MINUS;
@@ -144,6 +169,7 @@ simple_instr ::= assign_stat:si                  {: RESULT = si; :}
               | BEGIN instr:si END               {: RESULT = new BeginEndInstruction(si); :}
               | output_stat:si                   {: RESULT = si; :}
               | EXIT                             {: System.exit(0); :}
+              | do_end_case_stat:si              {: RESULT = si; :}
               ;
 
 instr ::= instr:i SEMI simple_instr:si           {: i.add(si); RESULT = i; :}
@@ -161,7 +187,15 @@ while_stat ::= WHILE bool_expr:c DO simple_instr:s       {: RESULT = new WhileIn
             | DO simple_instr:s WHILE bool_expr:c        {: RESULT = new DoWhileInstruction(c, s); :}
             ;
 
-output_stat ::= PRINT LPAREN expr:e  RPAREN               {: RESULT = new OutputInstruction(e); :}
+output_stat ::= PRINT LPAREN expr:e RPAREN               {: RESULT = new OutputInstruction(e); :}
+            ;
+
+do_end_case_stat ::= DOCASE case_stat:c ENDCASE       {: RESULT = new DoEndCaseInstruction(c); :}
+            ;
+
+case_stat ::= CASE bool_expr:e instr:i                           {: RESULT = new CaseInstruction(e, i); :}
+            | CASE bool_expr:e instr:i case_stat:c2              {: RESULT = new CaseInstruction(e, i, c2); :}
+            | CASE bool_expr:e instr:i OTHERWISE instr:i2         {: RESULT = new CaseInstruction(e, i, i2); :}
             ;
 
 program ::= instr:i
