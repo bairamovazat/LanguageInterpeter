@@ -4,15 +4,15 @@ import java.io.*;
 
 action  code {:
 
-    private InstructionList instructionList;
+    private Interpreter interpreter;
 
-    public InstructionList getInstructionList() {
-        return instructionList;
-    }
+      public Interpreter getInterpreter() {
+          return interpreter;
+      }
 
-    public void setInstructionList(InstructionList instructionList) {
-        this.instructionList = instructionList;
-    }
+      public void setInterpreter(Interpreter interpreter) {
+          this.interpreter = interpreter;
+      }
 
     public void report_error(String message, Object info) {
         StringBuilder m = new StringBuilder("Error");
@@ -211,6 +211,7 @@ case_stat ::= CASE bool_expr:e instr:i                           {: RESULT = new
 
 program ::= instr:i
           {:
-            setInstructionList(i);
+            Interpreter interpreter = new Interpreter(i);
+            setInterpreter(interpreter);
           :}
           ;

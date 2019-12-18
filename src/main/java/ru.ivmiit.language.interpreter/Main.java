@@ -13,8 +13,8 @@ public class Main {
             BufferedReader in  = new BufferedReader(new InputStreamReader(inputStream));
             ParserClassName p = new ParserClassName(new Lexer(in));
             p.parse();
-            InstructionList instructionList = p.action_obj.getInstructionList();
-
+            Interpreter interpreter = p.action_obj.getInterpreter();
+            interpreter.exec();
         } catch (Exception e) {
             e.printStackTrace();
         }
