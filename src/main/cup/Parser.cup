@@ -3,6 +3,17 @@ import java.util.*;
 import java.io.*;
 
 action  code {:
+
+    private InstructionList instructionList;
+
+    public InstructionList getInstructionList() {
+        return instructionList;
+    }
+
+    public void setInstructionList(InstructionList instructionList) {
+        this.instructionList = instructionList;
+    }
+
     public void report_error(String message, Object info) {
         StringBuilder m = new StringBuilder("Error");
         if (info instanceof java_cup.runtime.Symbol) {
@@ -200,7 +211,6 @@ case_stat ::= CASE bool_expr:e instr:i                           {: RESULT = new
 
 program ::= instr:i
           {:
-            Main program = new Main(i);
-            program.exec();
+            setInstructionList(i);
           :}
           ;
