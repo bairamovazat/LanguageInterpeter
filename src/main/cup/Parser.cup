@@ -4,15 +4,19 @@ import java.io.*;
 
 action  code {:
 
-    private Interpreter interpreter;
+    private Interpreter interpreter = new Interpreter(null);
 
-      public Interpreter getInterpreter() {
-          return interpreter;
-      }
+    public Interpreter getInterpreter() {
+        return interpreter;
+    }
 
-      public void setInterpreter(Interpreter interpreter) {
-          this.interpreter = interpreter;
-      }
+    public void setInterpreter(Interpreter interpreter) {
+        this.interpreter = interpreter;
+    }
+
+    public void updateInstructions(InstructionList instructionList) {
+        this.interpreter.updateInstructions(instructionList);
+    }
 
     public void report_error(String message, Object info) {
         StringBuilder m = new StringBuilder("Error");

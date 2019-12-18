@@ -6,15 +6,18 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         try {
-            Scanner scanner = new Scanner(System.in);
-            OutputStream outputStream = new ByteArrayOutputStream();
-            InputStream inputStream = Interpreter.class.getClassLoader().getResourceAsStream("test.txt");
+//            InputStream inputStream = Interpreter.class.getClassLoader().getResourceAsStream("test.txt");
+            InputStream inputStream = System.in;
 
-            BufferedReader in  = new BufferedReader(new InputStreamReader(inputStream));
+            BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
             ParserClassName p = new ParserClassName(new Lexer(in));
-            p.parse();
+            p.init_actions();
             Interpreter interpreter = p.action_obj.getInterpreter();
-            interpreter.exec();
+            while (true) {
+                p.parse();
+                interpreter.exec();
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }

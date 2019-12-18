@@ -1,5 +1,4 @@
 begin
-
 	i := 4;
 	docase
 	    case (i >= 1)
