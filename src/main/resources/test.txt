@@ -1,9 +1,27 @@
 begin
 	i := 4;
-	otherwise
-	    print (-1)
 	docase
 	    case (i >= 1)
+	        print (1)
+	    case (i >= 2)
+	        print (2)
+	    case (i >= 3)
+        docase
+	        case (i >= 1)
+	            print (1)
+	        case (i >= 2)
+	            print (2)
+	        case (i >= 3)
+                print (3)
+            otherwise
+                print (-1)
+	        endcase;
+        otherwise
+            print (-1)
+	endcase;
+
+    i := 12;
+    case (i >= 1)
 	        print (1)
 	    case (i >= 2)
 	        print (2)
@@ -11,11 +29,7 @@ begin
             print (3)
         otherwise
             print (-1)
-	endcase;
-
-
-
-
+	    endcase;
 	s1 := "asd";
 	print(s1)
 end
