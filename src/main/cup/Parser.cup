@@ -2,40 +2,41 @@ import java_cup.runtime.*;
 import java.util.*;
 import java.io.*;
 
+parser code {:
+
+     public void report_error(String message, Object info) {
+        getInterpreter().addError("Ошибка синтаксиса", cur_token);
+     }
+
+     public void report_fatal_error(String message, Object info) {
+        getInterpreter().addError("Критическая ошибка синтаксиса", cur_token);
+     }
+
+    public void syntax_error(Symbol cur_token) {
+        getInterpreter().addError("Ошибка синтаксиса", cur_token);
+    }
+
+     public void unrecovered_syntax_error(Symbol cur_token) {
+        getInterpreter().addError("Критическая ошибка синтаксиса", cur_token);
+     }
+
+     private Interpreter interpreter = new Interpreter(null);
+
+     public Interpreter getInterpreter() {
+         return interpreter;
+     }
+
+     public void setInterpreter(Interpreter interpreter) {
+          this.interpreter = interpreter;
+     }
+
+     public void updateInstructions(InstructionList instructionList) {
+          this.interpreter.updateInstructions(instructionList);
+     }
+:};
+
 action code {:
 
-    private Interpreter interpreter = new Interpreter(null);
-
-    public Interpreter getInterpreter() {
-        return interpreter;
-    }
-
-    public void setInterpreter(Interpreter interpreter) {
-        this.interpreter = interpreter;
-    }
-
-    public void updateInstructions(InstructionList instructionList) {
-        this.interpreter.updateInstructions(instructionList);
-    }
-
-    public void report_error(String message, Object info) {
-        StringBuilder m = new StringBuilder("Error");
-        if (info instanceof java_cup.runtime.Symbol) {
-            java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
-            if (s.left >= 0) {
-                m.append(" in line "+(s.left+1));
-                if (s.right >= 0)
-                    m.append(", column "+(s.right+1));
-            }
-        }
-        m.append(" : "+message);
-        System.err.println(m);
-    }
-
-    public void report_fatal_error(String message, Object info) {
-        report_error(message, info);
-        System.exit(1);
-    }
 :};
 
 /** Terminals */
@@ -58,6 +59,7 @@ terminal           SEMI, COMMA, PLUS, MINUS, TIMES, DIVIDE, MODE, LPAREN, RPAREN
 terminal Integer   NUM;
 terminal String    IDENT;
 terminal String    STRING;
+
 
 
 /** Non-terminals **/
@@ -187,8 +189,9 @@ simple_instr ::= assign_stat:si                  {: RESULT = si; :}
               | do_end_case_stat:si              {: RESULT = si; :}
               ;
 
-instr ::= instr:i SEMI simple_instr:si           {: i.add(si); RESULT = i; :}
-        | simple_instr:si                        {: RESULT = new InstructionList(si); :}
+instr ::= instr:i SEMI simple_instr:si      {: i.add(si); RESULT = i; :}
+        | simple_instr:si                   {: RESULT = new InstructionList(si); :}
+        | error:e                      {: RESULT = new InstructionList(); :}
         ;
 
 assign_stat ::= IDENT:i ASSIGN expr:e          {: RESULT = new AssignInstruction(i,e); :}
@@ -213,8 +216,5 @@ case_stat ::= CASE bool_expr:e instr:i                           {: RESULT = new
             | CASE bool_expr:e instr:i OTHERWISE instr:i2         {: RESULT = new CaseInstruction(e, i, i2); :}
             ;
 
-program ::= instr:i
-          {:
-            updateInstructions(i);
-          :}
+program ::= instr:i         {: updateInstructions(i); :}
           ;

@@ -34,6 +34,7 @@ interface CaseInstructionI {
 
 public class Interpreter {
 
+    private List<CupError> cupErrorList = new ArrayList<>();
     private HashMap<String, Object> hm = new HashMap<>();
     private InstructionList instructionList;
 
@@ -42,11 +43,23 @@ public class Interpreter {
     }
 
     public void exec() {
+        if(cupErrorList.size() != 0) {
+            throw new IllegalArgumentException("Запуск невозможен. Есть синтаксические ошибки");
+        }
         instructionList.run(hm);
     }
 
     public void updateInstructions(InstructionList instructionList) {
         this.instructionList = instructionList;
+    }
+
+    public void addError(CupError cupError) {
+        System.err.println(cupError.getError());
+        cupErrorList.add(cupError);
+    }
+
+    public void addError(String message, Object info) {
+        addError(new CupError(message, info));
     }
 }
 
@@ -566,6 +579,10 @@ class OutputInstruction implements SimpleInstruction {
  */
 class InstructionList {
     private List<SimpleInstruction> simpleInstructions;
+
+    public InstructionList() {
+        simpleInstructions = new ArrayList<SimpleInstruction>();
+    }
 
     public InstructionList(SimpleInstruction s) {
         simpleInstructions = new ArrayList<SimpleInstruction>();
