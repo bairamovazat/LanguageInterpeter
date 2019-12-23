@@ -93,5 +93,3 @@ STRING = \"([^\\\"]|\\.)*\"
 }
 
 
-/* error */
-[^]                    { throw new Error("Illegal character <"+yytext()+">"); }

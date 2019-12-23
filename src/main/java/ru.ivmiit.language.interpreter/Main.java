@@ -12,7 +12,8 @@ public class Main {
             BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
             ParserClassName p = new ParserClassName(new Lexer(in));
             p.parse();
-            Interpreter interpreter = p.action_obj.getInterpreter();
+
+            Interpreter interpreter = p.getInterpreter();
             interpreter.exec();
 
         } catch (Exception e) {
