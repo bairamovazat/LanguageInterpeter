@@ -1,7 +1,31 @@
 package ru.ivmiit.language.interpreter;
 
-import java.io.*;
 import java.util.*;
+
+abstract class InstructionPosition {
+    private int line;
+    private int column;
+
+    public int getLine() {
+        return line;
+    }
+
+    public void setLine(int line) {
+        this.line = line;
+    }
+
+    public int getColumn() {
+        return column;
+    }
+
+    public void setColumn(int column) {
+        this.column = column;
+    }
+
+    public IllegalArgumentException addPositionOnMessage(IllegalArgumentException throwable) {
+        return new IllegalArgumentException(throwable.getMessage() + " on line: " + line + ", on column: " + column, throwable);
+    }
+}
 
 interface Expr {
     Object run(HashMap<String, Object> hm);
@@ -43,7 +67,7 @@ public class Interpreter {
     }
 
     public void exec() {
-        if(cupErrorList.size() != 0) {
+        if (cupErrorList.size() != 0) {
             throw new IllegalArgumentException("Запуск невозможен. Есть синтаксические ошибки");
         }
         instructionList.run(hm);
@@ -66,7 +90,7 @@ public class Interpreter {
 /**
  * VARS
  */
-class ID implements Expr {
+class ID extends InstructionPosition implements Expr {
     String name;
 
     public ID(String s) {
@@ -78,7 +102,7 @@ class ID implements Expr {
     }
 }
 
-class AssignInstruction implements SimpleInstruction {
+class AssignInstruction extends InstructionPosition implements SimpleInstruction {
     String name;
     Expr val;
 
@@ -96,7 +120,7 @@ class AssignInstruction implements SimpleInstruction {
 /**
  * OPERATORS
  */
-class PlusOperator implements Operator {
+class PlusOperator extends InstructionPosition implements Operator {
 
     public int count(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
@@ -106,12 +130,12 @@ class PlusOperator implements Operator {
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer) v1 + (Integer) v2;
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 }
 
-class TimesOperator implements Operator {
+class TimesOperator extends InstructionPosition implements Operator {
 
     public int count(Expr e1, Expr e2, HashMap<String, Object> hm) {
         Object v1 = e1.run(hm);
@@ -119,12 +143,12 @@ class TimesOperator implements Operator {
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer) v1 * (Integer) v2;
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 }
 
-class MinusOperator implements Operator {
+class MinusOperator extends InstructionPosition implements Operator {
 
     public int count(Expr e1, Expr e2, HashMap<String, Object> hm) {
         Object v1 = e1.run(hm);
@@ -132,12 +156,12 @@ class MinusOperator implements Operator {
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer) v1 - (Integer) v2;
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 }
 
-class DivideOperator implements Operator {
+class DivideOperator extends InstructionPosition implements Operator {
 
     public int count(Expr e1, Expr e2, HashMap<String, Object> hm) {
         Object v1 = e1.run(hm);
@@ -149,12 +173,12 @@ class DivideOperator implements Operator {
             }
             return (Integer) v1 / (Integer) v2;
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 }
 
-class ModeOperator implements Operator {
+class ModeOperator extends InstructionPosition implements Operator {
 
     public int count(Expr e1, Expr e2, HashMap<String, Object> hm) {
         Object v1 = e1.run(hm);
@@ -166,12 +190,12 @@ class ModeOperator implements Operator {
             }
             return (Integer) v1 % (Integer) v2;
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 }
 
-class OperatorExpression implements Expr {
+class OperatorExpression extends InstructionPosition implements Expr {
 
     Expr e, e2;
     Operator o;
@@ -190,7 +214,7 @@ class OperatorExpression implements Expr {
 /**
  * INT OPERATIONS
  */
-class IntExpression implements Expr {
+class IntExpression extends InstructionPosition implements Expr {
     int value;
 
     public IntExpression(int e) {
@@ -202,14 +226,14 @@ class IntExpression implements Expr {
     }
 }
 
-class IntEnterExpression implements Expr {
+class IntEnterExpression extends InstructionPosition implements Expr {
     public Object run(HashMap<String, Object> hm) {
         java.util.Scanner in = new java.util.Scanner(System.in);
         return in.nextInt();
     }
 }
 
-class PIntExpression implements Expr {
+class PIntExpression extends InstructionPosition implements Expr {
     Expr expr;
 
     public PIntExpression(Expr e) {
@@ -221,7 +245,7 @@ class PIntExpression implements Expr {
     }
 }
 
-class UMinusExpression implements Expr {
+class UMinusExpression extends InstructionPosition implements Expr {
     Expr e;
 
     public UMinusExpression(Expr e) {
@@ -234,13 +258,13 @@ class UMinusExpression implements Expr {
         if (v instanceof Integer) {
             return -((Integer) v);
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 
 }
 
-class STRLengthExpression implements Expr {
+class STRLengthExpression extends InstructionPosition implements Expr {
     Expr e;
 
     public STRLengthExpression(Expr e) {
@@ -253,14 +277,14 @@ class STRLengthExpression implements Expr {
         if (v instanceof String) {
             return ((String) v).length();
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
 
     }
 
 }
 
-class STRPositionExpression implements Expr {
+class STRPositionExpression extends InstructionPosition implements Expr {
     Expr e, e2;
 
     public STRPositionExpression(Expr e, Expr e2) {
@@ -280,7 +304,7 @@ class STRPositionExpression implements Expr {
             int pos = s.indexOf(s2);
             return (pos != -1) ? pos + 1 : 0;
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 
@@ -289,7 +313,7 @@ class STRPositionExpression implements Expr {
 /**
  * CONDITIONS
  */
-class EqCond implements Condition {
+class EqCond extends InstructionPosition implements Condition {
     public boolean test(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
         Object v1 = e1.run(hm);
@@ -298,13 +322,13 @@ class EqCond implements Condition {
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer) v1 == (Integer) v2;
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
 
     }
 }
 
-class LtCond implements Condition {
+class LtCond extends InstructionPosition implements Condition {
     public boolean test(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
         Object v1 = e1.run(hm);
@@ -313,12 +337,12 @@ class LtCond implements Condition {
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer) v1 < (Integer) v2;
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 }
 
-class LeCond implements Condition {
+class LeCond extends InstructionPosition implements Condition {
     public boolean test(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
         Object v1 = e1.run(hm);
@@ -327,12 +351,12 @@ class LeCond implements Condition {
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer) v1 <= (Integer) v2;
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 }
 
-class GtCond implements Condition {
+class GtCond extends InstructionPosition implements Condition {
     public boolean test(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
         Object v1 = e1.run(hm);
@@ -341,12 +365,12 @@ class GtCond implements Condition {
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer) v1 > (Integer) v2;
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 }
 
-class GeCond implements Condition {
+class GeCond extends InstructionPosition implements Condition {
     public boolean test(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
         Object v1 = e1.run(hm);
@@ -355,12 +379,12 @@ class GeCond implements Condition {
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer) v1 >= (Integer) v2;
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 }
 
-class NeCond implements Condition {
+class NeCond extends InstructionPosition implements Condition {
     public boolean test(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
         Object v1 = e1.run(hm);
@@ -369,12 +393,12 @@ class NeCond implements Condition {
         if (v1 instanceof Integer && v2 instanceof Integer) {
             return (Integer) v1 != (Integer) v2;
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 }
 
-class StrEqCond implements Condition {
+class StrEqCond extends InstructionPosition implements Condition {
     public boolean test(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
         Object v1 = e1.run(hm);
@@ -383,12 +407,12 @@ class StrEqCond implements Condition {
         if (v1 instanceof String && v2 instanceof String) {
             return ((String) v1).equals((String) v2);
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 }
 
-class StrNotEqCond implements Condition {
+class StrNotEqCond extends InstructionPosition implements Condition {
     public boolean test(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
         Object v1 = e1.run(hm);
@@ -397,7 +421,7 @@ class StrNotEqCond implements Condition {
         if (v1 instanceof String && v2 instanceof String) {
             return !((String) v1).equals((String) v2);
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 }
@@ -405,7 +429,7 @@ class StrNotEqCond implements Condition {
 /**
  * BOOLEAN OPERATIONS
  */
-class BooleanExpression implements Expr {
+class BooleanExpression extends InstructionPosition implements Expr {
     Boolean value;
 
     public BooleanExpression(Boolean e) {
@@ -417,7 +441,7 @@ class BooleanExpression implements Expr {
     }
 }
 
-class ConditionBooleanExpression implements Expr {
+class ConditionBooleanExpression extends InstructionPosition implements Expr {
 
     Expr e, e2;
     Condition c;
@@ -433,7 +457,7 @@ class ConditionBooleanExpression implements Expr {
     }
 }
 
-class PBooleanExpression implements Expr {
+class PBooleanExpression extends InstructionPosition implements Expr {
     Expr expr;
 
     public PBooleanExpression(Expr e) {
@@ -445,7 +469,7 @@ class PBooleanExpression implements Expr {
     }
 }
 
-class NegationBooleanExpression implements Expr {
+class NegationBooleanExpression extends InstructionPosition implements Expr {
     Expr expr;
 
     public NegationBooleanExpression(Expr e) {
@@ -457,7 +481,7 @@ class NegationBooleanExpression implements Expr {
     }
 }
 
-class AndBooleanExpression implements Expr {
+class AndBooleanExpression extends InstructionPosition implements Expr {
     Expr expr, expr2;
 
     public AndBooleanExpression(Expr e, Expr e2) {
@@ -470,7 +494,7 @@ class AndBooleanExpression implements Expr {
     }
 }
 
-class OrBooleanExpression implements Expr {
+class OrBooleanExpression extends InstructionPosition implements Expr {
     Expr expr, expr2;
 
     public OrBooleanExpression(Expr e, Expr e2) {
@@ -487,7 +511,7 @@ class OrBooleanExpression implements Expr {
  * STRING OPERATIONS
  */
 
-class StringExpression implements Expr {
+class StringExpression extends InstructionPosition implements Expr {
     String value;
 
     public StringExpression(String e) {
@@ -499,14 +523,14 @@ class StringExpression implements Expr {
     }
 }
 
-class StrEnterExpression implements Expr {
+class StrEnterExpression extends InstructionPosition implements Expr {
     public Object run(HashMap<String, Object> hm) {
         java.util.Scanner in = new java.util.Scanner(System.in);
         return in.next();
     }
 }
 
-class ConcatStringExpression implements Expr {
+class ConcatStringExpression extends InstructionPosition implements Expr {
     Expr s, s2;
 
     public ConcatStringExpression(Expr s, Expr s2) {
@@ -521,12 +545,12 @@ class ConcatStringExpression implements Expr {
         if (v1 instanceof String && v2 instanceof String) {
             return (String) v1 + (String) v2;
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 }
 
-class SubStringExpression implements Expr {
+class SubStringExpression extends InstructionPosition implements Expr {
     Expr sExpr, posExpr, lengthExpr;
 
     public SubStringExpression(Expr s, Expr pos, Expr length) {
@@ -555,13 +579,13 @@ class SubStringExpression implements Expr {
                 return s.substring(pos - 1, pos + length - 1);
             }
         } else {
-            throw new IllegalArgumentException("Error: wrong objects type");
+            throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 }
 
 
-class OutputInstruction implements SimpleInstruction {
+class OutputInstruction extends InstructionPosition implements SimpleInstruction {
     Expr expr;
 
     public OutputInstruction(Expr e) {
@@ -577,7 +601,7 @@ class OutputInstruction implements SimpleInstruction {
 /**
  * FLOW OPERATIONS
  */
-class InstructionList {
+class InstructionList extends InstructionPosition {
     private List<SimpleInstruction> simpleInstructions;
 
     public InstructionList() {
@@ -600,7 +624,7 @@ class InstructionList {
     }
 }
 
-class WhileInstruction implements WhileInstructionI {
+class WhileInstruction extends InstructionPosition implements WhileInstructionI {
     Expr cond;
     SimpleInstruction si;
 
@@ -616,7 +640,7 @@ class WhileInstruction implements WhileInstructionI {
     }
 }
 
-class DoWhileInstruction implements WhileInstructionI {
+class DoWhileInstruction extends InstructionPosition implements WhileInstructionI {
     Expr cond;
     SimpleInstruction si;
 
@@ -632,7 +656,7 @@ class DoWhileInstruction implements WhileInstructionI {
     }
 }
 
-class IfInstruction implements IfInstructionI {
+class IfInstruction extends InstructionPosition implements IfInstructionI {
 
     Expr condition;
     SimpleInstruction simpleInstruction;
@@ -649,7 +673,7 @@ class IfInstruction implements IfInstructionI {
     }
 }
 
-class IfElseInstruction implements IfInstructionI {
+class IfElseInstruction extends InstructionPosition implements IfInstructionI {
 
     Expr condition;
     SimpleInstruction simpleInstruction;
@@ -670,7 +694,7 @@ class IfElseInstruction implements IfInstructionI {
     }
 }
 
-class DoEndCaseInstruction implements DoEndCaseInstructionI {
+class DoEndCaseInstruction extends InstructionPosition implements DoEndCaseInstructionI {
     CaseInstruction caseInstruction;
 
     public DoEndCaseInstruction(CaseInstruction caseInstruction) {
@@ -682,7 +706,7 @@ class DoEndCaseInstruction implements DoEndCaseInstructionI {
     }
 }
 
-class CaseInstruction implements CaseInstructionI {
+class CaseInstruction extends InstructionPosition implements CaseInstructionI {
 
     Expr condition;
     InstructionList simpleInstruction;
@@ -718,7 +742,7 @@ class CaseInstruction implements CaseInstructionI {
     }
 }
 
-class BeginEndInstruction implements SimpleInstruction {
+class BeginEndInstruction extends InstructionPosition implements SimpleInstruction {
     private InstructionList instructions;
 
     public BeginEndInstruction(InstructionList instructions) {
