@@ -1,5 +1,7 @@
 begin
 	i := 4;
+	otherwise
+	    print (-1)
 	docase
 	    case (i >= 1)
 	        print (1)
@@ -10,6 +12,9 @@ begin
         otherwise
             print (-1)
 	endcase;
+
+
+
 
 	s1 := "asd";
 	print(s1)

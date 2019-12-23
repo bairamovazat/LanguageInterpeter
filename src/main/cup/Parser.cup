@@ -2,7 +2,7 @@ import java_cup.runtime.*;
 import java.util.*;
 import java.io.*;
 
-action  code {:
+action code {:
 
     private Interpreter interpreter = new Interpreter(null);
 
@@ -215,7 +215,6 @@ case_stat ::= CASE bool_expr:e instr:i                           {: RESULT = new
 
 program ::= instr:i
           {:
-            Interpreter interpreter = new Interpreter(i);
-            setInterpreter(interpreter);
+            updateInstructions(i);
           :}
           ;

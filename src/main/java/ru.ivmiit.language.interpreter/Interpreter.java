@@ -127,7 +127,6 @@ class MinusOperator implements Operator {
 class DivideOperator implements Operator {
 
     public int count(Expr e1, Expr e2, HashMap<String, Object> hm) {
-
         Object v1 = e1.run(hm);
         Object v2 = e2.run(hm);
         if (v1 instanceof Integer && v2 instanceof Integer) {
