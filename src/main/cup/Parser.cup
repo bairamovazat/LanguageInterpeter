@@ -39,18 +39,24 @@ parser code {:
     }
 
     public int getCurColumn(){
-            return cur_token.right + 1;
-        }
+        return cur_token.right + 1;
+    }
 
-    public void setPosition(InstructionPosition instruction){
-            instruction.setColumn(getCurColumn());
-            instruction.setLine(getCurLine());
-        }
+    public void setPositionAndInterpreter(BaseInstruction instruction) {
+        setInterpreter(instruction);
+        setPosition(instruction);
+    }
+
+    public void setPosition(BaseInstruction instruction) {
+        instruction.setColumn(getCurColumn());
+        instruction.setLine(getCurLine());
+    }
+
+     public void setInterpreter(BaseInstruction instruction) {
+        instruction.setInterpreter(getInterpreter());
+     }
 :};
 
-action code {:
-
-:};
 
 /** Terminals */
 
@@ -111,122 +117,122 @@ start with program;
 /** ============= GRAMMAR ============= */
 
 /** done */
-num_op ::= PLUS             {: PlusOperator instruction = new PlusOperator(); setPosition(instruction); RESULT = instruction; :}
-         | MINUS            {: MinusOperator instruction = new MinusOperator(); setPosition(instruction); RESULT = instruction; :}
-         | TIMES            {: TimesOperator instruction = new TimesOperator(); setPosition(instruction); RESULT = instruction; :}
-         | DIVIDE           {: DivideOperator instruction = new DivideOperator(); setPosition(instruction); RESULT = instruction; :}
-         | MODE             {: ModeOperator instruction = new ModeOperator(); setPosition(instruction); RESULT = instruction; :}
+num_op ::= PLUS             {: PlusOperator instruction = new PlusOperator(); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+         | MINUS            {: MinusOperator instruction = new MinusOperator(); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+         | TIMES            {: TimesOperator instruction = new TimesOperator(); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+         | DIVIDE           {: DivideOperator instruction = new DivideOperator(); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+         | MODE             {: ModeOperator instruction = new ModeOperator(); setPositionAndInterpreter(instruction); RESULT = instruction; :}
          ;
 
-expr ::= IDENT:i            {: ID instruction = new ID(i); setPosition(instruction); RESULT = instruction; :}
+expr ::= IDENT:i            {: ID instruction = new ID(i); setPositionAndInterpreter(instruction); RESULT = instruction; :}
             |num_expr:e     {: RESULT = e; :}
             |str_expr:e     {: RESULT = e; :}
             ;
 
 num_expr ::=  NUM:e
                 {:
-                    IntExpression instruction = new IntExpression(e.intValue()); setPosition(instruction); RESULT = instruction;
+                    IntExpression instruction = new IntExpression(e.intValue()); setPositionAndInterpreter(instruction); RESULT = instruction;
                 :}
             | READINT
                  {:
-                    IntEnterExpression instruction = new IntEnterExpression(); setPosition(instruction); RESULT = instruction;
+                    IntEnterExpression instruction = new IntEnterExpression(); setPositionAndInterpreter(instruction); RESULT = instruction;
                  :}
             | MINUS expr:e
                 {:
-                    UMinusExpression instruction = new UMinusExpression(e); setPosition(instruction); RESULT = instruction;
+                    UMinusExpression instruction = new UMinusExpression(e); setPositionAndInterpreter(instruction); RESULT = instruction;
                 :}
             | LPAREN expr:e RPAREN
                 {:
-                    PIntExpression instruction = new PIntExpression(e); setPosition(instruction); RESULT = instruction;
+                    PIntExpression instruction = new PIntExpression(e); setPositionAndInterpreter(instruction); RESULT = instruction;
                 :}
             | LENGTH LPAREN expr:e RPAREN
                 {:
-                    STRLengthExpression instruction = new STRLengthExpression(e); setPosition(instruction); RESULT = instruction;
+                    STRLengthExpression instruction = new STRLengthExpression(e); setPositionAndInterpreter(instruction); RESULT = instruction;
                 :}
             | POSITION LPAREN expr:s COMMA expr:s2 RPAREN
                 {:
-                    STRPositionExpression instruction = new STRPositionExpression(s, s2); setPosition(instruction); RESULT = instruction;
+                    STRPositionExpression instruction = new STRPositionExpression(s, s2); setPositionAndInterpreter(instruction); RESULT = instruction;
                 :}
             | expr:e num_op:o expr:e2
                 {:
-                    OperatorExpression instruction = new OperatorExpression(e, o, e2); setPosition(instruction); RESULT = instruction;
+                    OperatorExpression instruction = new OperatorExpression(e, o, e2); setPositionAndInterpreter(instruction); RESULT = instruction;
                 :}
             ;
 
 str_expr ::=  STRING:s
                 {:
-                    StringExpression instruction = new StringExpression(s.substring(1, s.length()-1)); setPosition(instruction); RESULT = instruction;
+                    StringExpression instruction = new StringExpression(s.substring(1, s.length()-1)); setPositionAndInterpreter(instruction); RESULT = instruction;
                 :}
              | READSTR
                 {:
-                    StrEnterExpression instruction = new StrEnterExpression(); setPosition(instruction); RESULT = instruction;
+                    StrEnterExpression instruction = new StrEnterExpression(); setPositionAndInterpreter(instruction); RESULT = instruction;
                 :}
             | CONCATENATE LPAREN expr:s COMMA expr:s2 RPAREN
                 {:
-                    ConcatStringExpression instruction = new ConcatStringExpression(s, s2); setPosition(instruction); RESULT = instruction;
+                    ConcatStringExpression instruction = new ConcatStringExpression(s, s2); setPositionAndInterpreter(instruction); RESULT = instruction;
                 :}
               | SUBSTRING LPAREN expr:s COMMA expr:pos COMMA expr:length RPAREN
                 {:
-                    SubStringExpression instruction = new SubStringExpression(s, pos, length); setPosition(instruction); RESULT = instruction;
+                    SubStringExpression instruction = new SubStringExpression(s, pos, length); setPositionAndInterpreter(instruction); RESULT = instruction;
                 :}
              ;
 
-num_rel ::=   EQ         {: EqCond instruction = new EqCond(); setPosition(instruction); RESULT = instruction; :}
-            | LT         {: LtCond instruction = new LtCond(); setPosition(instruction); RESULT = instruction; :}
-            | LE         {: LeCond instruction = new LeCond(); setPosition(instruction); RESULT = instruction; :}
-            | GT         {: GtCond instruction = new GtCond(); setPosition(instruction); RESULT = instruction; :}
-            | GE         {: GeCond instruction = new GeCond(); setPosition(instruction); RESULT = instruction; :}
-            | NE         {: NeCond instruction = new NeCond(); setPosition(instruction); RESULT = instruction; :}
+num_rel ::=   EQ         {: EqCond instruction = new EqCond(); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+            | LT         {: LtCond instruction = new LtCond(); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+            | LE         {: LeCond instruction = new LeCond(); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+            | GT         {: GtCond instruction = new GtCond(); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+            | GE         {: GeCond instruction = new GeCond(); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+            | NE         {: NeCond instruction = new NeCond(); setPositionAndInterpreter(instruction); RESULT = instruction; :}
             ;
 
-str_rel ::= STREQ     {: StrEqCond instruction = new StrEqCond(); setPosition(instruction); RESULT = instruction; :}
-          | STRNOTEQ  {: StrNotEqCond instruction = new StrNotEqCond(); setPosition(instruction); RESULT = instruction; :}
+str_rel ::= STREQ     {: StrEqCond instruction = new StrEqCond(); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+          | STRNOTEQ  {: StrNotEqCond instruction = new StrNotEqCond(); setPositionAndInterpreter(instruction); RESULT = instruction; :}
           ;
 
-bool_expr ::= TRUE                               {: BooleanExpression instruction = new BooleanExpression(true); setPosition(instruction); RESULT = instruction; :}
-            | FALSE                              {: BooleanExpression instruction = new BooleanExpression(false); setPosition(instruction); RESULT = instruction; :}
-            | LPAREN bool_expr:e RPAREN          {: PBooleanExpression instruction = new PBooleanExpression(e); setPosition(instruction); RESULT = instruction; :}
-            | NOT bool_expr:e                    {: NegationBooleanExpression instruction = new NegationBooleanExpression(e); setPosition(instruction); RESULT = instruction; :}
-            | bool_expr:e AND bool_expr:e2       {: AndBooleanExpression instruction = new AndBooleanExpression(e, e2); setPosition(instruction); RESULT = instruction; :}
-            | bool_expr:e OR bool_expr:e2        {: OrBooleanExpression instruction = new OrBooleanExpression(e, e2); setPosition(instruction); RESULT = instruction; :}
-            | expr: e num_rel:o expr:e2          {: ConditionBooleanExpression instruction = new ConditionBooleanExpression(e, o, e2); setPosition(instruction); RESULT = instruction; :}
-            | expr:s str_rel:o expr:s2           {: ConditionBooleanExpression instruction = new ConditionBooleanExpression(s, o, s2); setPosition(instruction); RESULT = instruction; :}
+bool_expr ::= TRUE                               {: BooleanExpression instruction = new BooleanExpression(true); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+            | FALSE                              {: BooleanExpression instruction = new BooleanExpression(false); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+            | LPAREN bool_expr:e RPAREN          {: PBooleanExpression instruction = new PBooleanExpression(e); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+            | NOT bool_expr:e                    {: NegationBooleanExpression instruction = new NegationBooleanExpression(e); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+            | bool_expr:e AND bool_expr:e2       {: AndBooleanExpression instruction = new AndBooleanExpression(e, e2); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+            | bool_expr:e OR bool_expr:e2        {: OrBooleanExpression instruction = new OrBooleanExpression(e, e2); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+            | expr: e num_rel:o expr:e2          {: ConditionBooleanExpression instruction = new ConditionBooleanExpression(e, o, e2); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+            | expr:s str_rel:o expr:s2           {: ConditionBooleanExpression instruction = new ConditionBooleanExpression(s, o, s2); setPositionAndInterpreter(instruction); RESULT = instruction; :}
             ;
 
 simple_instr ::= assign_stat:si                  {: RESULT = si; :}
               | if_stat:si                       {: RESULT = si; :}
               | while_stat:si                    {: RESULT = si; :}
-              | BEGIN instr:si END               {: BeginEndInstruction instruction = new BeginEndInstruction(si); setPosition(instruction); RESULT = instruction; :}
+              | BEGIN instr:si END               {: BeginEndInstruction instruction = new BeginEndInstruction(si); setPositionAndInterpreter(instruction); RESULT = instruction; :}
               | output_stat:si                   {: RESULT = si; :}
               | EXIT                             {: System.exit(0); :}
               | do_end_case_stat:si              {: RESULT = si; :}
               ;
 
-instr ::= instr:i SEMI simple_instr:si      {: i.add(si); RESULT = i; :}
-        | simple_instr:si                   {: InstructionList instruction = new InstructionList(si); setPosition(instruction); RESULT = instruction; :}
-        | error:e                      {: InstructionList instruction = new InstructionList(); setPosition(instruction); RESULT = instruction; :}
+instr ::= instr:i simple_instr:si SEMI      {: i.add(si); RESULT = i; :}
+        | simple_instr:si SEMI              {: InstructionList instruction = new InstructionList(si); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+        | error:e SEMI                      {: InstructionList instruction = new InstructionList(); setPositionAndInterpreter(instruction); RESULT = instruction; :}
         ;
 
-assign_stat ::= IDENT:i ASSIGN expr:e          {: AssignInstruction instruction = new AssignInstruction(i,e); setPosition(instruction); RESULT = instruction; :}
+assign_stat ::= IDENT:i ASSIGN expr:e          {: AssignInstruction instruction = new AssignInstruction(i,e); setPositionAndInterpreter(instruction); RESULT = instruction; :}
                 ;
 
-if_stat ::= IF bool_expr:c THEN simple_instr:s                          {: IfInstruction instruction = new IfInstruction(c, s); setPosition(instruction); RESULT = instruction; :}
-            | IF bool_expr:c THEN simple_instr:s ELSE simple_instr:s2   {:  IfElseInstruction instruction = new IfElseInstruction(c, s, s2); setPosition(instruction); RESULT = instruction; :}
+if_stat ::= IF bool_expr:c THEN simple_instr:s                          {: IfInstruction instruction = new IfInstruction(c, s); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+            | IF bool_expr:c THEN simple_instr:s ELSE simple_instr:s2   {:  IfElseInstruction instruction = new IfElseInstruction(c, s, s2); setPositionAndInterpreter(instruction); RESULT = instruction; :}
             ;
 
-while_stat ::= WHILE bool_expr:c DO simple_instr:s       {: WhileInstruction instruction = new WhileInstruction(c, s); setPosition(instruction); RESULT = instruction; :}
-            | DO simple_instr:s WHILE bool_expr:c        {: DoWhileInstruction instruction = new DoWhileInstruction(c, s); setPosition(instruction); RESULT = instruction; :}
+while_stat ::= WHILE bool_expr:c DO simple_instr:s       {: WhileInstruction instruction = new WhileInstruction(c, s); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+            | DO simple_instr:s WHILE bool_expr:c        {: DoWhileInstruction instruction = new DoWhileInstruction(c, s); setPositionAndInterpreter(instruction); RESULT = instruction; :}
             ;
 
-output_stat ::= PRINT LPAREN expr:e RPAREN               {: OutputInstruction instruction = new OutputInstruction(e); setPosition(instruction); RESULT = instruction; :}
+output_stat ::= PRINT LPAREN expr:e RPAREN               {: OutputInstruction instruction = new OutputInstruction(e); setPositionAndInterpreter(instruction); RESULT = instruction; :}
             ;
 
-do_end_case_stat ::= DOCASE case_stat:c ENDCASE       {: DoEndCaseInstruction instruction = new DoEndCaseInstruction(c); setPosition(instruction); RESULT = instruction; :}
+do_end_case_stat ::= DOCASE case_stat:c ENDCASE       {: DoEndCaseInstruction instruction = new DoEndCaseInstruction(c); setPositionAndInterpreter(instruction); RESULT = instruction; :}
             ;
 
-case_stat ::= CASE bool_expr:e instr:i                           {: CaseInstruction instruction = new CaseInstruction(e, i); setPosition(instruction); RESULT = instruction; :}
-            | CASE bool_expr:e instr:i case_stat:c2              {: CaseInstruction instruction = new CaseInstruction(e, i, c2); setPosition(instruction); RESULT = instruction; :}
-            | CASE bool_expr:e instr:i OTHERWISE instr:i2         {: CaseInstruction instruction = new CaseInstruction(e, i, i2); setPosition(instruction); RESULT = instruction; :}
+case_stat ::= CASE bool_expr:e instr:i                           {: CaseInstruction instruction = new CaseInstruction(e, i); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+            | CASE bool_expr:e instr:i case_stat:c2              {: CaseInstruction instruction = new CaseInstruction(e, i, c2); setPositionAndInterpreter(instruction); RESULT = instruction; :}
+            | CASE bool_expr:e instr:i OTHERWISE instr:i2         {: CaseInstruction instruction = new CaseInstruction(e, i, i2); setPositionAndInterpreter(instruction); RESULT = instruction; :}
             ;
 
 program ::= instr:i         {: updateInstructions(i); :}

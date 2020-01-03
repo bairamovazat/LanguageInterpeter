@@ -11,6 +11,18 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>ru.ivmiit.language.interpreterbot.BotRunner</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <source>8</source>
@@ -53,23 +65,23 @@
                 </executions>
             </plugin>
             <!--<plugin>-->
-                <!--<groupId>org.codehaus.mojo</groupId>-->
-                <!--<artifactId>build-helper-maven-plugin</artifactId>-->
-                <!--<version>3.0.0</version>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<id>add-source</id>-->
-                        <!--<phase>generate-sources</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>add-source</goal>-->
-                        <!--</goals>-->
-                        <!--<configuration>-->
-                            <!--<sources>-->
-                                <!--<source>${project.build.directory}/generated-sources/jflex</source>-->
-                            <!--</sources>-->
-                        <!--</configuration>-->
-                    <!--</execution>-->
-                <!--</executions>-->
+            <!--<groupId>org.codehaus.mojo</groupId>-->
+            <!--<artifactId>build-helper-maven-plugin</artifactId>-->
+            <!--<version>3.0.0</version>-->
+            <!--<executions>-->
+            <!--<execution>-->
+            <!--<id>add-source</id>-->
+            <!--<phase>generate-sources</phase>-->
+            <!--<goals>-->
+            <!--<goal>add-source</goal>-->
+            <!--</goals>-->
+            <!--<configuration>-->
+            <!--<sources>-->
+            <!--<source>${project.build.directory}/generated-sources/jflex</source>-->
+            <!--</sources>-->
+            <!--</configuration>-->
+            <!--</execution>-->
+            <!--</executions>-->
             <!--</plugin>-->
         </plugins>
     </build>
@@ -97,17 +109,23 @@
             <artifactId>sdk</artifactId>
             <version>0.5.12</version>
         </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-jdk14</artifactId>
-                <version>1.7.22</version>
-            </dependency>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.30</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.30</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>2.7</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
@@ -118,6 +136,24 @@
             <artifactId>log4j-core</artifactId>
             <version>2.7</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.5.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.10</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+        </dependency>
     </dependencies>
-
 </project>
