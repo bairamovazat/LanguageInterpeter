@@ -2,6 +2,7 @@ package ru.ivmiit.language.interpreterbot.model;
 
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import ru.ivmiit.language.interpreterbot.model.*;
 import ru.ivmiit.language.interpreterbot.model.vk.SingletonHandlerFactoryImpl;
@@ -18,6 +19,7 @@ public class VkBot implements Bot {
 
     private final VkConnection vkConnection;
     private final List<Consumer<BotMessage>> handlers = new ArrayList<>();
+    private Runnable initConnectionHandler = () -> {};
 
     public VkBot(String vkConfigName) {
         VkBotProperties vkBotProperties = new VkBotPropertiesImpl(vkConfigName);
@@ -52,9 +54,15 @@ public class VkBot implements Bot {
     }
 
     @Override
+    public void setInitConnectionHandler(Runnable initConnectionHandler) {
+        this.initConnectionHandler = initConnectionHandler;
+    }
+
+    @Override
     public void start() {
         try {
             vkConnection.initVkConnection();
+            initConnectionHandler.run();
             vkConnection.startHandler();
         } catch (ClientException | ApiException e) {
             throw new IllegalArgumentException(e);

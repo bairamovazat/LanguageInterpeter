@@ -8,6 +8,9 @@ public interface Bot {
     public void sendMessage(BotMessage botMessage);
     public void addHandler(Consumer<BotMessage> vkMessageConsumer);
     public void removeHandler(Consumer<BotMessage> vkMessageConsumer);
+
+    void setInitConnectionHandler(Runnable initConnectionHandler);
+
     public void start();
     public void stop();
 }
