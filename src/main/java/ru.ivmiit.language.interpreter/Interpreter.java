@@ -1,10 +1,16 @@
 package ru.ivmiit.language.interpreter;
 
-import java.util.*;
+import lombok.Getter;
+import lombok.Setter;
 
-abstract class InstructionPosition {
+import java.io.InputStream;
+import java.util.*;
+import java.util.function.Consumer;
+
+abstract class BaseInstruction {
     private int line;
     private int column;
+    private Interpreter interpreter;
 
     public int getLine() {
         return line;
@@ -22,8 +28,16 @@ abstract class InstructionPosition {
         this.column = column;
     }
 
+    public Interpreter getInterpreter() {
+        return interpreter;
+    }
+
+    public void setInterpreter(Interpreter interpreter) {
+        this.interpreter = interpreter;
+    }
+
     public IllegalArgumentException addPositionOnMessage(IllegalArgumentException throwable) {
-        return new IllegalArgumentException(throwable.getMessage() + " on line: " + line + ", on column: " + column, throwable);
+        return new IllegalArgumentException(throwable.getMessage() + " on line: " + getLine() + ", on column: " + getColumn(), throwable);
     }
 }
 
@@ -58,9 +72,23 @@ interface CaseInstructionI {
 
 public class Interpreter {
 
+    @Getter
     private List<CupError> cupErrorList = new ArrayList<>();
     private HashMap<String, Object> hm = new HashMap<>();
     private InstructionList instructionList;
+    //Нужно продублировать входящий поток для считывания числел (для input)
+    @Getter
+    @Setter
+    private InputStream inputStream;
+
+    @Getter
+    @Setter
+    private Consumer<String> handler = (s) -> {
+    };
+    @Getter
+    @Setter
+    private Consumer<String> errorHandler = (s) -> {
+    };
 
     public Interpreter(InstructionList instructionList) {
         this.instructionList = instructionList;
@@ -77,8 +105,8 @@ public class Interpreter {
         this.instructionList = instructionList;
     }
 
-    public void addError(CupError cupError) {
-        System.err.println(cupError.getError());
+    private void addError(CupError cupError) {
+//        errorHandler.accept(cupError.getError());
         cupErrorList.add(cupError);
     }
 
@@ -90,8 +118,8 @@ public class Interpreter {
 /**
  * VARS
  */
-class ID extends InstructionPosition implements Expr {
-    String name;
+class ID extends BaseInstruction implements Expr {
+    private String name;
 
     public ID(String s) {
         name = s;
@@ -102,9 +130,9 @@ class ID extends InstructionPosition implements Expr {
     }
 }
 
-class AssignInstruction extends InstructionPosition implements SimpleInstruction {
-    String name;
-    Expr val;
+class AssignInstruction extends BaseInstruction implements SimpleInstruction {
+    private String name;
+    private Expr val;
 
     public AssignInstruction(String i, Expr e) {
         name = i;
@@ -120,7 +148,7 @@ class AssignInstruction extends InstructionPosition implements SimpleInstruction
 /**
  * OPERATORS
  */
-class PlusOperator extends InstructionPosition implements Operator {
+class PlusOperator extends BaseInstruction implements Operator {
 
     public int count(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
@@ -135,7 +163,7 @@ class PlusOperator extends InstructionPosition implements Operator {
     }
 }
 
-class TimesOperator extends InstructionPosition implements Operator {
+class TimesOperator extends BaseInstruction implements Operator {
 
     public int count(Expr e1, Expr e2, HashMap<String, Object> hm) {
         Object v1 = e1.run(hm);
@@ -148,7 +176,7 @@ class TimesOperator extends InstructionPosition implements Operator {
     }
 }
 
-class MinusOperator extends InstructionPosition implements Operator {
+class MinusOperator extends BaseInstruction implements Operator {
 
     public int count(Expr e1, Expr e2, HashMap<String, Object> hm) {
         Object v1 = e1.run(hm);
@@ -161,7 +189,7 @@ class MinusOperator extends InstructionPosition implements Operator {
     }
 }
 
-class DivideOperator extends InstructionPosition implements Operator {
+class DivideOperator extends BaseInstruction implements Operator {
 
     public int count(Expr e1, Expr e2, HashMap<String, Object> hm) {
         Object v1 = e1.run(hm);
@@ -178,7 +206,7 @@ class DivideOperator extends InstructionPosition implements Operator {
     }
 }
 
-class ModeOperator extends InstructionPosition implements Operator {
+class ModeOperator extends BaseInstruction implements Operator {
 
     public int count(Expr e1, Expr e2, HashMap<String, Object> hm) {
         Object v1 = e1.run(hm);
@@ -195,10 +223,11 @@ class ModeOperator extends InstructionPosition implements Operator {
     }
 }
 
-class OperatorExpression extends InstructionPosition implements Expr {
+class OperatorExpression extends BaseInstruction implements Expr {
 
-    Expr e, e2;
-    Operator o;
+    private Expr e;
+    private Expr e2;
+    private Operator o;
 
     public OperatorExpression(Expr e, Operator o, Expr e2) {
         this.e = e;
@@ -214,8 +243,8 @@ class OperatorExpression extends InstructionPosition implements Expr {
 /**
  * INT OPERATIONS
  */
-class IntExpression extends InstructionPosition implements Expr {
-    int value;
+class IntExpression extends BaseInstruction implements Expr {
+    private int value;
 
     public IntExpression(int e) {
         value = e;
@@ -226,15 +255,15 @@ class IntExpression extends InstructionPosition implements Expr {
     }
 }
 
-class IntEnterExpression extends InstructionPosition implements Expr {
+class IntEnterExpression extends BaseInstruction implements Expr {
     public Object run(HashMap<String, Object> hm) {
-        java.util.Scanner in = new java.util.Scanner(System.in);
+        java.util.Scanner in = new java.util.Scanner(getInterpreter().getInputStream());
         return in.nextInt();
     }
 }
 
-class PIntExpression extends InstructionPosition implements Expr {
-    Expr expr;
+class PIntExpression extends BaseInstruction implements Expr {
+    private Expr expr;
 
     public PIntExpression(Expr e) {
         expr = e;
@@ -245,8 +274,8 @@ class PIntExpression extends InstructionPosition implements Expr {
     }
 }
 
-class UMinusExpression extends InstructionPosition implements Expr {
-    Expr e;
+class UMinusExpression extends BaseInstruction implements Expr {
+    private Expr e;
 
     public UMinusExpression(Expr e) {
         this.e = e;
@@ -264,8 +293,8 @@ class UMinusExpression extends InstructionPosition implements Expr {
 
 }
 
-class STRLengthExpression extends InstructionPosition implements Expr {
-    Expr e;
+class STRLengthExpression extends BaseInstruction implements Expr {
+    private Expr e;
 
     public STRLengthExpression(Expr e) {
         this.e = e;
@@ -284,8 +313,9 @@ class STRLengthExpression extends InstructionPosition implements Expr {
 
 }
 
-class STRPositionExpression extends InstructionPosition implements Expr {
-    Expr e, e2;
+class STRPositionExpression extends BaseInstruction implements Expr {
+    private Expr e;
+    private Expr e2;
 
     public STRPositionExpression(Expr e, Expr e2) {
         this.e = e;
@@ -313,14 +343,14 @@ class STRPositionExpression extends InstructionPosition implements Expr {
 /**
  * CONDITIONS
  */
-class EqCond extends InstructionPosition implements Condition {
+class EqCond extends BaseInstruction implements Condition {
     public boolean test(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
         Object v1 = e1.run(hm);
         Object v2 = e2.run(hm);
 
         if (v1 instanceof Integer && v2 instanceof Integer) {
-            return (Integer) v1 == (Integer) v2;
+            return v1.equals(v2);
         } else {
             throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
@@ -328,7 +358,7 @@ class EqCond extends InstructionPosition implements Condition {
     }
 }
 
-class LtCond extends InstructionPosition implements Condition {
+class LtCond extends BaseInstruction implements Condition {
     public boolean test(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
         Object v1 = e1.run(hm);
@@ -342,7 +372,7 @@ class LtCond extends InstructionPosition implements Condition {
     }
 }
 
-class LeCond extends InstructionPosition implements Condition {
+class LeCond extends BaseInstruction implements Condition {
     public boolean test(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
         Object v1 = e1.run(hm);
@@ -356,7 +386,7 @@ class LeCond extends InstructionPosition implements Condition {
     }
 }
 
-class GtCond extends InstructionPosition implements Condition {
+class GtCond extends BaseInstruction implements Condition {
     public boolean test(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
         Object v1 = e1.run(hm);
@@ -370,7 +400,7 @@ class GtCond extends InstructionPosition implements Condition {
     }
 }
 
-class GeCond extends InstructionPosition implements Condition {
+class GeCond extends BaseInstruction implements Condition {
     public boolean test(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
         Object v1 = e1.run(hm);
@@ -384,42 +414,42 @@ class GeCond extends InstructionPosition implements Condition {
     }
 }
 
-class NeCond extends InstructionPosition implements Condition {
+class NeCond extends BaseInstruction implements Condition {
     public boolean test(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
         Object v1 = e1.run(hm);
         Object v2 = e2.run(hm);
 
         if (v1 instanceof Integer && v2 instanceof Integer) {
-            return (Integer) v1 != (Integer) v2;
+            return !v1.equals(v2);
         } else {
             throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 }
 
-class StrEqCond extends InstructionPosition implements Condition {
+class StrEqCond extends BaseInstruction implements Condition {
     public boolean test(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
         Object v1 = e1.run(hm);
         Object v2 = e2.run(hm);
 
         if (v1 instanceof String && v2 instanceof String) {
-            return ((String) v1).equals((String) v2);
+            return v1.equals(v2);
         } else {
             throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
     }
 }
 
-class StrNotEqCond extends InstructionPosition implements Condition {
+class StrNotEqCond extends BaseInstruction implements Condition {
     public boolean test(Expr e1, Expr e2, HashMap<String, Object> hm) {
 
         Object v1 = e1.run(hm);
         Object v2 = e2.run(hm);
 
         if (v1 instanceof String && v2 instanceof String) {
-            return !((String) v1).equals((String) v2);
+            return !v1.equals(v2);
         } else {
             throw addPositionOnMessage(new IllegalArgumentException("Error: wrong objects type"));
         }
@@ -429,8 +459,8 @@ class StrNotEqCond extends InstructionPosition implements Condition {
 /**
  * BOOLEAN OPERATIONS
  */
-class BooleanExpression extends InstructionPosition implements Expr {
-    Boolean value;
+class BooleanExpression extends BaseInstruction implements Expr {
+    private Boolean value;
 
     public BooleanExpression(Boolean e) {
         value = e;
@@ -441,10 +471,11 @@ class BooleanExpression extends InstructionPosition implements Expr {
     }
 }
 
-class ConditionBooleanExpression extends InstructionPosition implements Expr {
+class ConditionBooleanExpression extends BaseInstruction implements Expr {
 
-    Expr e, e2;
-    Condition c;
+    private Expr e;
+    private Expr e2;
+    private Condition c;
 
     public ConditionBooleanExpression(Expr e, Condition c, Expr e2) {
         this.e = e;
@@ -457,8 +488,8 @@ class ConditionBooleanExpression extends InstructionPosition implements Expr {
     }
 }
 
-class PBooleanExpression extends InstructionPosition implements Expr {
-    Expr expr;
+class PBooleanExpression extends BaseInstruction implements Expr {
+    private Expr expr;
 
     public PBooleanExpression(Expr e) {
         expr = e;
@@ -469,8 +500,8 @@ class PBooleanExpression extends InstructionPosition implements Expr {
     }
 }
 
-class NegationBooleanExpression extends InstructionPosition implements Expr {
-    Expr expr;
+class NegationBooleanExpression extends BaseInstruction implements Expr {
+    private Expr expr;
 
     public NegationBooleanExpression(Expr e) {
         expr = e;
@@ -481,8 +512,9 @@ class NegationBooleanExpression extends InstructionPosition implements Expr {
     }
 }
 
-class AndBooleanExpression extends InstructionPosition implements Expr {
-    Expr expr, expr2;
+class AndBooleanExpression extends BaseInstruction implements Expr {
+    private Expr expr;
+    private Expr expr2;
 
     public AndBooleanExpression(Expr e, Expr e2) {
         expr = e;
@@ -494,8 +526,9 @@ class AndBooleanExpression extends InstructionPosition implements Expr {
     }
 }
 
-class OrBooleanExpression extends InstructionPosition implements Expr {
-    Expr expr, expr2;
+class OrBooleanExpression extends BaseInstruction implements Expr {
+    private Expr expr;
+    private Expr expr2;
 
     public OrBooleanExpression(Expr e, Expr e2) {
         expr = e;
@@ -511,8 +544,8 @@ class OrBooleanExpression extends InstructionPosition implements Expr {
  * STRING OPERATIONS
  */
 
-class StringExpression extends InstructionPosition implements Expr {
-    String value;
+class StringExpression extends BaseInstruction implements Expr {
+    private String value;
 
     public StringExpression(String e) {
         value = e;
@@ -523,15 +556,16 @@ class StringExpression extends InstructionPosition implements Expr {
     }
 }
 
-class StrEnterExpression extends InstructionPosition implements Expr {
+class StrEnterExpression extends BaseInstruction implements Expr {
     public Object run(HashMap<String, Object> hm) {
-        java.util.Scanner in = new java.util.Scanner(System.in);
+        java.util.Scanner in = new java.util.Scanner(getInterpreter().getInputStream());
         return in.next();
     }
 }
 
-class ConcatStringExpression extends InstructionPosition implements Expr {
-    Expr s, s2;
+class ConcatStringExpression extends BaseInstruction implements Expr {
+    private Expr s;
+    private Expr s2;
 
     public ConcatStringExpression(Expr s, Expr s2) {
         this.s = s;
@@ -550,8 +584,11 @@ class ConcatStringExpression extends InstructionPosition implements Expr {
     }
 }
 
-class SubStringExpression extends InstructionPosition implements Expr {
-    Expr sExpr, posExpr, lengthExpr;
+class SubStringExpression extends BaseInstruction implements Expr {
+    private Expr sExpr;
+    private Expr posExpr;
+    private Expr lengthExpr;
+
 
     public SubStringExpression(Expr s, Expr pos, Expr length) {
         sExpr = s;
@@ -585,15 +622,15 @@ class SubStringExpression extends InstructionPosition implements Expr {
 }
 
 
-class OutputInstruction extends InstructionPosition implements SimpleInstruction {
-    Expr expr;
+class OutputInstruction extends BaseInstruction implements SimpleInstruction {
+    private Expr expr;
 
     public OutputInstruction(Expr e) {
         expr = e;
     }
 
     public void run(HashMap<String, Object> hm) {
-        System.out.println(expr.run(hm));
+        getInterpreter().getHandler().accept(expr.run(hm).toString());
     }
 }
 
@@ -601,15 +638,15 @@ class OutputInstruction extends InstructionPosition implements SimpleInstruction
 /**
  * FLOW OPERATIONS
  */
-class InstructionList extends InstructionPosition {
+class InstructionList extends BaseInstruction {
     private List<SimpleInstruction> simpleInstructions;
 
     public InstructionList() {
-        simpleInstructions = new ArrayList<SimpleInstruction>();
+        simpleInstructions = new ArrayList<>();
     }
 
     public InstructionList(SimpleInstruction s) {
-        simpleInstructions = new ArrayList<SimpleInstruction>();
+        simpleInstructions = new ArrayList<>();
         simpleInstructions.add(s);
     }
 
@@ -624,9 +661,9 @@ class InstructionList extends InstructionPosition {
     }
 }
 
-class WhileInstruction extends InstructionPosition implements WhileInstructionI {
-    Expr cond;
-    SimpleInstruction si;
+class WhileInstruction extends BaseInstruction implements WhileInstructionI {
+    private Expr cond;
+    private SimpleInstruction si;
 
     public WhileInstruction(Expr c, SimpleInstruction s) {
         cond = c;
@@ -640,9 +677,9 @@ class WhileInstruction extends InstructionPosition implements WhileInstructionI 
     }
 }
 
-class DoWhileInstruction extends InstructionPosition implements WhileInstructionI {
-    Expr cond;
-    SimpleInstruction si;
+class DoWhileInstruction extends BaseInstruction implements WhileInstructionI {
+    private Expr cond;
+    private SimpleInstruction si;
 
     public DoWhileInstruction(Expr c, SimpleInstruction s) {
         cond = c;
@@ -656,10 +693,10 @@ class DoWhileInstruction extends InstructionPosition implements WhileInstruction
     }
 }
 
-class IfInstruction extends InstructionPosition implements IfInstructionI {
+class IfInstruction extends BaseInstruction implements IfInstructionI {
 
-    Expr condition;
-    SimpleInstruction simpleInstruction;
+    private Expr condition;
+    private SimpleInstruction simpleInstruction;
 
     public IfInstruction(Expr condition, SimpleInstruction simpleInstruction) {
         this.condition = condition;
@@ -673,11 +710,11 @@ class IfInstruction extends InstructionPosition implements IfInstructionI {
     }
 }
 
-class IfElseInstruction extends InstructionPosition implements IfInstructionI {
+class IfElseInstruction extends BaseInstruction implements IfInstructionI {
 
-    Expr condition;
-    SimpleInstruction simpleInstruction;
-    SimpleInstruction simpleInstruction2;
+    private Expr condition;
+    private SimpleInstruction simpleInstruction;
+    private SimpleInstruction simpleInstruction2;
 
     public IfElseInstruction(Expr condition, SimpleInstruction simpleInstruction, SimpleInstruction simpleInstruction2) {
         this.condition = condition;
@@ -694,8 +731,8 @@ class IfElseInstruction extends InstructionPosition implements IfInstructionI {
     }
 }
 
-class DoEndCaseInstruction extends InstructionPosition implements DoEndCaseInstructionI {
-    CaseInstruction caseInstruction;
+class DoEndCaseInstruction extends BaseInstruction implements DoEndCaseInstructionI {
+    private CaseInstruction caseInstruction;
 
     public DoEndCaseInstruction(CaseInstruction caseInstruction) {
         this.caseInstruction = caseInstruction;
@@ -706,12 +743,12 @@ class DoEndCaseInstruction extends InstructionPosition implements DoEndCaseInstr
     }
 }
 
-class CaseInstruction extends InstructionPosition implements CaseInstructionI {
+class CaseInstruction extends BaseInstruction implements CaseInstructionI {
 
-    Expr condition;
-    InstructionList simpleInstruction;
-    CaseInstruction caseInstruction;
-    InstructionList otherwiseInstruction;
+    private Expr condition;
+    private InstructionList simpleInstruction;
+    private CaseInstruction caseInstruction;
+    private InstructionList otherwiseInstruction;
 
 
     public CaseInstruction(Expr condition, InstructionList simpleInstruction) {
@@ -742,7 +779,7 @@ class CaseInstruction extends InstructionPosition implements CaseInstructionI {
     }
 }
 
-class BeginEndInstruction extends InstructionPosition implements SimpleInstruction {
+class BeginEndInstruction extends BaseInstruction implements SimpleInstruction {
     private InstructionList instructions;
 
     public BeginEndInstruction(InstructionList instructions) {

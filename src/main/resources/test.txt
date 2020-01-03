@@ -1,15 +1,7 @@
+i := 0;
+while(i < 10) do
 begin
-	i := 4;
-	docase
-	    case (i >= 1)
-	        print (1)
-	    case (i >= 2)
-	        print (2)
-	    case (i >= 3)
-            print (3)
-        otherwise
-            print (-1)
-	endcase;
 	s1 := "asd";
-	print(s1)
-end
+	print(s1);
+	i := i + 1;
+end;
