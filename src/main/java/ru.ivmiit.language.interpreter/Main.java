@@ -1,7 +1,5 @@
 package ru.ivmiit.language.interpreter;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.*;
 import java.util.Scanner;
 
