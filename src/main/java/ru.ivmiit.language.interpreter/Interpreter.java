@@ -197,7 +197,6 @@ class DivideOperator extends BaseInstruction implements Operator {
         if (v1 instanceof Integer && v2 instanceof Integer) {
             if ((Integer) v2 == 0) {
                 throw new ArithmeticException("Error: division by zero");
-
             }
             return (Integer) v1 / (Integer) v2;
         } else {
