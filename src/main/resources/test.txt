@@ -1,7 +1,100 @@
 i := 0;
-while(i < 10) do
-begin
-	s1 := "asd";
-	print(s1);
-	i := i + 1;
-end;
+docase
+	case (i = 1)
+	    print (1);
+	case (i = 2)
+	    print (2);
+	case (i = 3)
+        print (3);
+    otherwise
+        print ("Otherwise check");
+endcase;
+
+docase
+	case (i = 1)
+	    print (1);
+	case (i = 2)
+	    print (2);
+	case (i = 3)
+        print (3);
+endcase;
+print ("Without answer and otherwise check");
+
+docase
+	case (i = 0)
+	    docase
+        	case (i = 0)
+        	    print ("Nested docase check");
+        	case (i = 2)
+        	    print (2);
+        endcase;
+	case (i = 2)
+	    print (2);
+endcase;
+
+docase
+	case (i = 1)
+	    docase
+        	case (i = 1)
+        	    print (1);
+        	case (i = 2)
+        	    print (2);
+        endcase;
+	case (i = 2)
+	    print (2);
+	otherwise
+        print ("Nested false otherwise check");
+endcase;
+
+docase
+	case (i = 0)
+	    docase
+        	case (i = 1)
+        	    print (1);
+        	case (i = 2)
+        	    print (2);
+        	otherwise
+                print ("Nested true otherwise check");
+        endcase;
+	case (i = 2)
+	    print (2);
+endcase;
+
+docase
+	case (i = 0)
+	    docase
+        	case (i = 1)
+        	    print (1);
+        	case (i = 2)
+        	    print (2);
+        	otherwise
+                print ("Nested true false 1 otherwise check");
+        endcase;
+	case (i = 2)
+	    print (2);
+	otherwise
+        print ("Nested true false 2 otherwise check");
+endcase;
+
+docase
+	case (i = 0)
+	    docase
+        	case (i = 1)
+        	    print (1);
+        	case (i = 0)
+        	    docase
+                    case (i = 1)
+                        print (1);
+                    case (i = 2)
+                        print (2);
+                    otherwise
+                        print ("3 Nested check");
+                    endcase;
+        	otherwise
+                print (3);
+        endcase;
+	case (i = 2)
+	    print (2);
+	otherwise
+        print (3);
+endcase;
