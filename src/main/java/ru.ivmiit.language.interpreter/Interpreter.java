@@ -106,7 +106,7 @@ public class Interpreter {
     }
 
     private void addError(CupError cupError) {
-//        errorHandler.accept(cupError.getError());
+        errorHandler.accept(cupError.getError());
         cupErrorList.add(cupError);
     }
 

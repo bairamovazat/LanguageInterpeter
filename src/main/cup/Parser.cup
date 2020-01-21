@@ -5,19 +5,19 @@ import java.io.*;
 parser code {:
 
      public void report_error(String message, Object info) {
-        getInterpreter().addError("Ошибка синтаксиса", cur_token);
+        getInterpreter().addError("Неверная синтаксическая конструкция", cur_token);
      }
 
      public void report_fatal_error(String message, Object info) {
-        getInterpreter().addError("Критическая ошибка синтаксиса", cur_token);
+        getInterpreter().addError("Критически неверная синтаксическая конструкция", cur_token);
      }
 
     public void syntax_error(Symbol cur_token) {
-        getInterpreter().addError("Ошибка синтаксиса", cur_token);
+        getInterpreter().addError("Неверная синтаксическая конструкция", cur_token);
     }
 
      public void unrecovered_syntax_error(Symbol cur_token) {
-        getInterpreter().addError("Критическая ошибка синтаксиса", cur_token);
+        getInterpreter().addError("Критически неверная синтаксическая конструкция", cur_token);
      }
 
      private Interpreter interpreter = new Interpreter(null);
